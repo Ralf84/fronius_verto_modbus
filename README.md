@@ -15,7 +15,7 @@ HACS installation
 * Go to HACS
 * Click on the 3 dots in the top right corner.
 * Select "Custom repositories"
-* Add the [URL]([https://github.com/redpomodoro/fronius_modbus](https://github.com/Ralf84/fronius_verto_modbus)) to the repository.
+* Add the https://github.com/Ralf84/fronius_verto_modbus to the repository.
 * Select the 'integration' type.
 * Click the "ADD" button.
 
@@ -118,16 +118,18 @@ To come!
 # Example Devices (Outdated screenshots!)
 
 Battery Storage
-![battery storage](images/example_batterystorage0.png?raw=true "storage")
+wip
 
 Battery Storage Actions
-![battery storage actions](images/example_batterystorage.png?raw=true "storage actions")
+wip
 
 Smart Meter
-![smart meter](images/example_meter.png?raw=true "meter")
+<img width="814" height="656" alt="image" src="https://github.com/user-attachments/assets/d47e19df-4b6a-4a17-a7c3-900f36e9c07b" />
+
 
 Inverter 
-![smart meter](images/example_inverter.png?raw=true "inverter")
+<img width="804" height="974" alt="image" src="https://github.com/user-attachments/assets/ebe4fd9a-f9a9-460f-a03e-65fe5aafd8a9" />
+
 
 
 # References
