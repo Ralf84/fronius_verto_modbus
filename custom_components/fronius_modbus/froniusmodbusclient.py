@@ -331,6 +331,42 @@ class FroniusModbusClient(ExtModbusClient):
         self.data['mppt2_lfte'] = mppt2_lfte
         self.data['mppt3_lfte'] = mppt3_lfte
 
+        # --- START AUTARKIE BERECHNUNG ---
+        try:
+            # Wir holen die PV Leistung, die wir oben gerade berechnet haben
+            pv_p = self.data.get('pv_power', 0)
+            
+            # Wir holen die Netz-Leistung vom Smart Meter (m1_power)
+            # Wichtig: Bei Fronius ist m1_power POSITIV bei Bezug und NEGATIV bei Einspeisung
+            grid_p = self.data.get('m1_power', 0)
+            
+            # Aktueller Hausverbrauch = PV-Leistung + Netzbezug (bzw. - Einspeisung)
+            # Beispiel: 500W PV + (-300W Einspeisung) = 200W Verbrauch
+            house_consumption = max(0, pv_p + grid_p)
+            
+            # Autarkie: Wie viel vom Verbrauch ist NICHT aus dem Netz?
+            if house_consumption > 0:
+                grid_import = max(0, grid_p) # Nur positiver Bezug zählt
+                autarky = (1 - (grid_import / house_consumption)) * 100
+            else:
+                autarky = 100 if pv_p > 0 else 0
+
+            # Eigenverbrauch: Wie viel der PV-Leistung bleibt im Haus?
+            if pv_p > 0:
+                grid_export = abs(min(0, grid_p)) # Nur negative Werte (Einspeisung)
+                self_consumption = ((pv_p - grid_export) / pv_p) * 100
+            else:
+                self_consumption = 0
+
+            # Werte in self.data schreiben (begrenzt auf 0-100%)
+            self.data['autarky'] = round(min(100, max(0, autarky)), 1)
+            self.data['self_consumption'] = round(min(100, max(0, self_consumption)), 1)
+            
+        except Exception as e:
+            _LOGGER.warning(f"Fehler bei Autarkie-Berechnung: {e}")
+        # --- ENDE AUTARKIE BERECHNUNG ---
+
+        
         if self.storage_configured:
             module_4_DCW = self._client.convert_from_registers(regs[79:80], data_type = self._client.DATATYPE.UINT16)
             module_4_DCWH = self._client.convert_from_registers(regs[80:82], data_type = self._client.DATATYPE.UINT32)
