@@ -1,7 +1,7 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 
 # fronius_verto_modbus
-Home assistant Custom Component for reading data from Fronius Gen24 Inverter and connected smart meters and battery storage. This integration uses a local modbus connection. 
+Home assistant Custom Component for reading data from Fronius Verto Inverter and connected smart meters and battery storage. This integration uses a local modbus connection. 
 
 > [!CAUTION]
 > This is a work in progress project - it is still in early development stage, so there are still breaking changes possible.
@@ -15,7 +15,7 @@ HACS installation
 * Go to HACS
 * Click on the 3 dots in the top right corner.
 * Select "Custom repositories"
-* Add the [URL](https://github.com/redpomodoro/fronius_modbus) to the repository.
+* Add the [URL]([https://github.com/redpomodoro/fronius_modbus](https://github.com/Ralf84/fronius_verto_modbus)) to the repository.
 * Select the 'integration' type.
 * Click the "ADD" button.
 
