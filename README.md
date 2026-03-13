@@ -133,6 +133,7 @@ Inverter
 
 
 # References
-- https://www.fronius.com/~/downloads/Solar%20Energy/Operating%20Instructions/42,0410,2649.pdf
+- https://manuals.fronius.com/html/4204260464/
+- https://solar-distribution.baywa-re.at/out/media/27-Verto_Plus_Operating_instructions_VertoPlus_DE.pdf
 - https://github.com/binsentsu/home-assistant-solaredge-modbus/
 - https://github.com/bigramonk/byd_charging
