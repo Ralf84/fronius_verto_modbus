@@ -75,8 +75,8 @@ INVERTER_SENSOR_TYPES = {
     'VArPct_Ena': ['Limit VAr control', 'VArPct_Ena', None, None, None, None, EntityCategory.DIAGNOSTIC],
     'PhVphA': ['AC voltage L1-N', 'PhVphA', SensorDeviceClass.VOLTAGE, SensorStateClass.MEASUREMENT, 'V', 'mdi:lightning-bolt', None],
     'unit_id': ['Modbus ID', 'i_unit_id', None, None, None, None, EntityCategory.DIAGNOSTIC],    
-    'self_consumption': ['Self Consumption', 'self_consumption', None, SensorStateClass.MEASUREMENT, '%', 'mdi:house-bolt', None],
-    'autarky': ['Autarky', 'autarky', None, SensorStateClass.MEASUREMENT, '%', 'mdi:chart-donut_chart', None],
+    'self_consumption': ['Self Consumption', 'self_consumption', None, SensorStateClass.MEASUREMENT, '%', 'mdi:home-lightning-bolt', None],
+    'autarky': ['Autarky', 'autarky', None, SensorStateClass.MEASUREMENT, '%', 'mdi:chart-arc', None],
 }
 
 INVERTER_SYMO_SENSOR_TYPES = {
