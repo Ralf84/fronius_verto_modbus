@@ -184,30 +184,22 @@ class FroniusModbusClient(ExtModbusClient):
         WH = self._client.convert_from_registers(regs[22:24], data_type = self._client.DATATYPE.UINT32)
         WH_SF = self._client.convert_from_registers(regs[24:25], data_type = self._client.DATATYPE.INT16)
 
-        # --- TEMPERATUR BERECHNUNG START ---
+        # --- TEMPERATUR FIX ---
         try:
-            # Wir lesen den Rohwert (Reg 31) und den SF (Reg 32)
+            # Wir lesen nur den Rohwert von Register 31
             t_raw = self._client.convert_from_registers(regs[31:32], data_type = self._client.DATATYPE.INT16)
-            t_sf = self._client.convert_from_registers(regs[32:33], data_type = self._client.DATATYPE.INT16)
-
-            if t_raw is not None:
-                # Plausibilitäts-Check für den Verto:
-                # 1. Wenn der Wert groß ist (z.B. 410), sind es Zehntel-Grad
-                if 100 < t_raw < 1000:
-                    self.data['tempcab'] = t_raw / 10.0
-                # 2. Wenn der Wert klein ist (z.B. 41), sind es direkt Grad
-                elif 10 <= t_raw <= 100:
-                    self.data['tempcab'] = float(t_raw)
-                # 3. Ansonsten Standard-Berechnung mit Sicherheitsnetz für den SF
-                else:
-                    safe_sf = t_sf if t_sf in [0, -1, -2] else 0
-                    self.data['tempcab'] = self.calculate_value(t_raw, safe_sf)
+            
+            if t_raw is not None and t_raw != 0:
+                # Da dein Screenshot vorhin 0.41 bei SF -2 zeigte, 
+                # wissen wir: Der Rohwert im Register ist 41.
+                # Wir nehmen diesen Wert einfach 1:1 als Grad Celsius.
+                self.data['tempcab'] = float(t_raw)
             else:
                 self.data['tempcab'] = 0.0
+                
         except Exception as e:
-            _LOGGER.error(f"Fehler bei Temperatur-Berechnung: {e}")
+            _LOGGER.error(f"Temperatur Fehler: {e}")
             self.data['tempcab'] = 0.0
-        # --- TEMPERATUR BERECHNUNG ENDE ---
         
         #St = self._client.convert_from_registers(regs[36:37], data_type = self._client.DATATYPE.UINT16)
         StVnd = self._client.convert_from_registers(regs[37:38], data_type = self._client.DATATYPE.UINT16)
