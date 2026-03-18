@@ -190,8 +190,10 @@ class FroniusModbusClient(ExtModbusClient):
             TmpCab = self._client.convert_from_registers(regs[5:6], data_type = self._client.DATATYPE.INT16)
             Tmp_SF = self._client.convert_from_registers(regs[4:5], data_type = self._client.DATATYPE.INT16)
             
-            if TmpCab_raw is not None and TmpCab_raw != 0:
-                self.data['tempcab'] = float(t_raw)
+            temp_raw_calculated = self.calculate_value(TmpCab, Tmp_SF)
+
+            if temp_raw_calculated is not None:
+                self.data['tempcab'] = temp_raw_calculated * 100
             else:
                 self.data['tempcab'] = 0.0
                 
