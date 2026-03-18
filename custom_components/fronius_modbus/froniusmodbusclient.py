@@ -187,7 +187,8 @@ class FroniusModbusClient(ExtModbusClient):
         # --- TEMPERATUR FIX ---
         try:
             # Wir lesen den Rohwert aus Register 31 (der vorhin '41' geliefert hat)
-            TmpCab_raw = self._client.convert_from_registers(regs[5:6], data_type = self._client.DATATYPE.INT16)
+            TmpCab = self._client.convert_from_registers(regs[5:6], data_type = self._client.DATATYPE.INT16)
+            Tmp_SF = self._client.convert_from_registers(regs[4:5], data_type = self._client.DATATYPE.INT16)
             
             if TmpCab_raw is not None and TmpCab_raw != 0:
                 self.data['tempcab'] = float(t_raw)
