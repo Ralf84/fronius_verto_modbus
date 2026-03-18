@@ -212,7 +212,7 @@ class FroniusModbusClient(ExtModbusClient):
         self.data['PhVphA'] = self.calculate_value(PhVphA, V_SF)
         self.data['PhVphB'] = self.calculate_value(PhVphB, V_SF)
         self.data['PhVphC'] = self.calculate_value(PhVphC, V_SF)
-        self.data['tempcab'] = self.calculate_value(TmpCab, Tmp_SF)
+        #self.data['tempcab'] = self.calculate_value(TmpCab, Tmp_SF)
         self.data["acpower"] = self.calculate_value(W, W_SF, 2, -50000, 50000)
         self.data["line_frequency"] = self.calculate_value(Hz, Hz_SF, 2, 0, 100)
         self.data["acenergy"] = self.calculate_value(WH, WH_SF) 
