@@ -187,12 +187,9 @@ class FroniusModbusClient(ExtModbusClient):
         # --- TEMPERATUR FIX ---
         try:
             # Wir lesen den Rohwert aus Register 31 (der vorhin '41' geliefert hat)
-            t_raw = self._client.convert_from_registers(regs[31:32], data_type = self._client.DATATYPE.INT16)
+            TmpCab_raw = self._client.convert_from_registers(regs[5:6], data_type = self._client.DATATYPE.INT16)
             
-            if t_raw is not None and t_raw != 0:
-                # Wir ignorieren Tmp_SF (Register 32) komplett!
-                # Wir nehmen den Rohwert '41' einfach direkt als float.
-                # Das entspricht einer Multiplikation mit 100 gegenüber dem 0,41 Fehler.
+            if TmpCab_raw is not None and TmpCab_raw != 0:
                 self.data['tempcab'] = float(t_raw)
             else:
                 self.data['tempcab'] = 0.0
