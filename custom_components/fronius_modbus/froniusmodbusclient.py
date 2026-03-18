@@ -187,12 +187,19 @@ class FroniusModbusClient(ExtModbusClient):
         TmpCab = self._client.convert_from_registers(regs[31:32], data_type = self._client.DATATYPE.INT16)
         Tmp_SF = self._client.convert_from_registers(regs[32:33], data_type = self._client.DATATYPE.INT16)
 
-        if Tmp_SF_raw is None or Tmp_SF_raw < -5 or Tmp_SF_raw > 5:
-            real_sf = 0 
+        if TmpCab_raw is not None:
+            # Wenn der Wert zwischen 100 und 1000 liegt, sind es wahrscheinlich Zehntel-Grad (z.B. 410 für 41°C)
+            if 100 < TmpCab_raw < 1000:
+                self.data['tempcab'] = TmpCab_raw / 10.0
+            # Wenn der Wert klein ist (z.B. 41), sind es direkt Grad
+            elif 10 <= TmpCab_raw <= 100:
+                self.data['tempcab'] = float(TmpCab_raw)
+            # Ansonsten nutzen wir den SF, falls er plausibel ist (meist 0 oder -1)
+            else:
+                sf = Tmp_SF_raw if Tmp_SF_raw in [0, -1, -2] else 0
+                self.data['tempcab'] = self.calculate_value(TmpCab_raw, sf)
         else:
-            real_sf = Tmp_SF_raw
-
-        self.data['tempcab'] = self.calculate_value(TmpCab, real_sf)
+            self.data['tempcab'] = None
         
         #St = self._client.convert_from_registers(regs[36:37], data_type = self._client.DATATYPE.UINT16)
         StVnd = self._client.convert_from_registers(regs[37:38], data_type = self._client.DATATYPE.UINT16)
