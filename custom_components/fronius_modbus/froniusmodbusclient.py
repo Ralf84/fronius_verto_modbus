@@ -186,6 +186,14 @@ class FroniusModbusClient(ExtModbusClient):
 
         TmpCab = self._client.convert_from_registers(regs[31:32], data_type = self._client.DATATYPE.INT16)
         Tmp_SF = self._client.convert_from_registers(regs[32:33], data_type = self._client.DATATYPE.INT16)
+
+        if Tmp_SF_raw is None or Tmp_SF_raw < -5 or Tmp_SF_raw > 5:
+            real_sf = 0 
+        else:
+            real_sf = Tmp_SF_raw
+
+        self.data['tempcab'] = self.calculate_value(TmpCab, real_sf)
+        
         #St = self._client.convert_from_registers(regs[36:37], data_type = self._client.DATATYPE.UINT16)
         StVnd = self._client.convert_from_registers(regs[37:38], data_type = self._client.DATATYPE.UINT16)
         #EvtVnd1 = self._client.convert_from_registers(regs[42:44], data_type = self._client.DATATYPE.UINT32)
@@ -301,6 +309,19 @@ class FroniusModbusClient(ExtModbusClient):
         #     _LOGGER.error(f"Integration only supports 4 mppt modules. Found only: {N}")
         #     return
 
+        DCV_SF = self._client.convert_from_registers(regs[1:2], data_type = self._client.DATATYPE.INT16)
+        
+        # 2. Spannungen lesen (Register 18, 38, 58)
+        v1 = self._client.convert_from_registers(regs[18:19], data_type = self._client.DATATYPE.UINT16)
+        v2 = self._client.convert_from_registers(regs[38:39], data_type = self._client.DATATYPE.UINT16)
+        v3 = self._client.convert_from_registers(regs[58:59], data_type = self._client.DATATYPE.UINT16)
+
+        # 3. In self.data schreiben
+        self.data['mppt1_voltage'] = self.calculate_value(v1, DCV_SF)
+        self.data['mppt2_voltage'] = self.calculate_value(v2, DCV_SF)
+        self.data['mppt3_voltage'] = self.calculate_value(v3, DCV_SF)
+        
+        
         module_1_DCW = self._client.convert_from_registers(regs[19:20], data_type = self._client.DATATYPE.UINT16)
         module_1_DCWH = self._client.convert_from_registers(regs[20:22], data_type = self._client.DATATYPE.UINT32)
 
