@@ -184,8 +184,8 @@ class FroniusModbusClient(ExtModbusClient):
         WH = self._client.convert_from_registers(regs[22:24], data_type = self._client.DATATYPE.UINT32)
         WH_SF = self._client.convert_from_registers(regs[24:25], data_type = self._client.DATATYPE.INT16)
 
-        TmpCab = self._client.convert_from_registers(regs[5:6], data_type = self._client.DATATYPE.INT16)
-        Tmp_SF = self._client.convert_from_registers(regs[4:5], data_type = self._client.DATATYPE.INT16)
+        TmpCab = self._client.convert_from_registers(regs[31:32], data_type = self._client.DATATYPE.INT16)
+        Tmp_SF = self._client.convert_from_registers(regs[32:33], data_type = self._client.DATATYPE.INT16)
         #St = self._client.convert_from_registers(regs[36:37], data_type = self._client.DATATYPE.UINT16)
         StVnd = self._client.convert_from_registers(regs[37:38], data_type = self._client.DATATYPE.UINT16)
         #EvtVnd1 = self._client.convert_from_registers(regs[42:44], data_type = self._client.DATATYPE.UINT32)
