@@ -184,22 +184,30 @@ class FroniusModbusClient(ExtModbusClient):
         WH = self._client.convert_from_registers(regs[22:24], data_type = self._client.DATATYPE.UINT32)
         WH_SF = self._client.convert_from_registers(regs[24:25], data_type = self._client.DATATYPE.INT16)
 
-        TmpCab = self._client.convert_from_registers(regs[31:32], data_type = self._client.DATATYPE.INT16)
-        Tmp_SF = self._client.convert_from_registers(regs[32:33], data_type = self._client.DATATYPE.INT16)
+        # --- TEMPERATUR BERECHNUNG START ---
+        try:
+            # Wir lesen den Rohwert (Reg 31) und den SF (Reg 32)
+            t_raw = self._client.convert_from_registers(regs[31:32], data_type = self._client.DATATYPE.INT16)
+            t_sf = self._client.convert_from_registers(regs[32:33], data_type = self._client.DATATYPE.INT16)
 
-        if TmpCab_raw is not None:
-            # Wenn der Wert zwischen 100 und 1000 liegt, sind es wahrscheinlich Zehntel-Grad (z.B. 410 für 41°C)
-            if 100 < TmpCab_raw < 1000:
-                self.data['tempcab'] = TmpCab_raw / 10.0
-            # Wenn der Wert klein ist (z.B. 41), sind es direkt Grad
-            elif 10 <= TmpCab_raw <= 100:
-                self.data['tempcab'] = float(TmpCab_raw)
-            # Ansonsten nutzen wir den SF, falls er plausibel ist (meist 0 oder -1)
+            if t_raw is not None:
+                # Plausibilitäts-Check für den Verto:
+                # 1. Wenn der Wert groß ist (z.B. 410), sind es Zehntel-Grad
+                if 100 < t_raw < 1000:
+                    self.data['tempcab'] = t_raw / 10.0
+                # 2. Wenn der Wert klein ist (z.B. 41), sind es direkt Grad
+                elif 10 <= t_raw <= 100:
+                    self.data['tempcab'] = float(t_raw)
+                # 3. Ansonsten Standard-Berechnung mit Sicherheitsnetz für den SF
+                else:
+                    safe_sf = t_sf if t_sf in [0, -1, -2] else 0
+                    self.data['tempcab'] = self.calculate_value(t_raw, safe_sf)
             else:
-                sf = Tmp_SF_raw if Tmp_SF_raw in [0, -1, -2] else 0
-                self.data['tempcab'] = self.calculate_value(TmpCab_raw, sf)
-        else:
-            self.data['tempcab'] = None
+                self.data['tempcab'] = 0.0
+        except Exception as e:
+            _LOGGER.error(f"Fehler bei Temperatur-Berechnung: {e}")
+            self.data['tempcab'] = 0.0
+        # --- TEMPERATUR BERECHNUNG ENDE ---
         
         #St = self._client.convert_from_registers(regs[36:37], data_type = self._client.DATATYPE.UINT16)
         StVnd = self._client.convert_from_registers(regs[37:38], data_type = self._client.DATATYPE.UINT16)
