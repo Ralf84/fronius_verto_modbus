@@ -193,7 +193,7 @@ class FroniusModbusClient(ExtModbusClient):
 
             if TmpCab_raw is not None and Tmp_SF is not None:
                 # Wir nutzen die Standard-Berechnung: TmpCab * 10^Tmp_SF
-                self.data['tempcab'] = self.calculate_value(TmpCab_raw, Tmp_SF)
+                self.data['tempcab'] = self.calculate_value(TmpCab_raw, -1)
             else:
                 self.data['tempcab'] = 0.0
                 
