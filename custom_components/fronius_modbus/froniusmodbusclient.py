@@ -164,10 +164,22 @@ class FroniusModbusClient(ExtModbusClient):
         return True
 
     async def read_inverter_data(self):
-        regs = await self.get_registers(unit_id=self._inverter_unit_id, address=INVERTER_ADDRESS, count=50)
+        regs = await self.get_registers(unit_id=self._inverter_unit_id, address=40000, count=150)
         if regs is None:
             return False
+            
+        for i in range(len(regs)):
+            if regs[i] == 103:
+                # Das ist der Moment der Wahrheit!
+                echte_adresse = 40001 + i
+                _LOGGER.error(f"GEFUNDEN! Modell 103 startet bei Adresse: {echte_adresse} (Index {i})")
+                
+                # Wenn wir die 103 gefunden haben, ist TmpCab 33 Register weiter
+                t_raw = regs[i + 33]
+                _LOGGER.error(f"TmpCab Rohwert an dieser Stelle: {t_raw}")
+                break
 
+        
         PPVphAB = self._client.convert_from_registers(regs[5:6], data_type = self._client.DATATYPE.UINT16)
         PPVphBC = self._client.convert_from_registers(regs[6:7], data_type = self._client.DATATYPE.UINT16)
         PPVphCA = self._client.convert_from_registers(regs[7:8], data_type = self._client.DATATYPE.UINT16)
