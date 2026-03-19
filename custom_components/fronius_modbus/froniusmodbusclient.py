@@ -187,9 +187,9 @@ class FroniusModbusClient(ExtModbusClient):
         # --- TEMPERATUR FIX ---
         try:
             # Cabinet Temperature (Register 34)
-            TmpCab_raw = self._client.convert_from_registers(regs[32:33], data_type = self._client.DATATYPE.INT16)
+            TmpCab_raw = self._client.convert_from_registers(regs[33:34], data_type = self._client.DATATYPE.INT16)
             # Scale Factor für alle Temperaturen (Register 38)
-            Tmp_SF = self._client.convert_from_registers(regs[36:37], data_type = self._client.DATATYPE.INT16)
+            Tmp_SF = self._client.convert_from_registers(regs[37:38], data_type = self._client.DATATYPE.INT16)
 
             if TmpCab_raw is not None and Tmp_SF is not None:
                 # Wir nutzen die Standard-Berechnung: TmpCab * 10^Tmp_SF
