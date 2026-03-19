@@ -187,19 +187,23 @@ class FroniusModbusClient(ExtModbusClient):
         # --- TEMPERATUR FIX ---
         try:
             # Cabinet Temperature (Register 34)
-            TmpCab_raw = self._client.convert_from_registers(regs[33:34], data_type = self._client.DATATYPE.INT16)
-            # Scale Factor für alle Temperaturen (Register 38)
-            Tmp_SF = self._client.convert_from_registers(regs[37:38], data_type = self._client.DATATYPE.INT16)
+            r31 = self._client.convert_from_registers(regs[30:31], data_type = self._client.DATATYPE.INT16)
+            r32 = self._client.convert_from_registers(regs[31:32], data_type = self._client.DATATYPE.INT16)
+            r33 = self._client.convert_from_registers(regs[32:33], data_type = self._client.DATATYPE.INT16)
+            r34 = self._client.convert_from_registers(regs[33:34], data_type = self._client.DATATYPE.INT16)
+            r35 = self._client.convert_from_registers(regs[34:35], data_type = self._client.DATATYPE.INT16)
+            
+            _LOGGER.info(f"VERTO SCAN: R31={r31}, R32={r32}, R33={r33}, R34={r34}, R35={r35}")
 
-            if TmpCab_raw is not None and Tmp_SF is not None:
-                # Wir nutzen die Standard-Berechnung: TmpCab * 10^Tmp_SF
-                self.data['tempcab'] = self.calculate_value(TmpCab_raw, -1)
+            # Such dir den Wert aus dem Log, der wie eine Temperatur aussieht (z.B. 41 oder 410)
+            # Und setze ihn hier testweise fest ein:
+            if r32 is not None and r32 != -32768:
+                self.data['tempcab'] = r32 / 10.0 # Falls 410 kommt
             else:
                 self.data['tempcab'] = 0.0
-                
+
         except Exception as e:
-            _LOGGER.error(f"Fehler beim Lesen der Inverter-Temperatur: {e}")
-            self.data['tempcab'] = 0.0
+            _LOGGER.error(f"Scan fehlgeschlagen: {e}")
         
         #St = self._client.convert_from_registers(regs[36:37], data_type = self._client.DATATYPE.UINT16)
         StVnd = self._client.convert_from_registers(regs[37:38], data_type = self._client.DATATYPE.UINT16)
