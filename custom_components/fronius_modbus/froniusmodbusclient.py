@@ -164,7 +164,7 @@ class FroniusModbusClient(ExtModbusClient):
         return True
 
     async def read_inverter_data(self):
-        regs = await self.get_registers(unit_id=self._inverter_unit_id, address=40000, count=150)
+        regs = await self.get_registers(unit_id=self._inverter_unit_id, address=INVERTER_ADDRESS, count=150)
         if regs is None:
             return False
             
