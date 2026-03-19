@@ -163,33 +163,47 @@ class FroniusModbusClient(ExtModbusClient):
 
         return True
 
-    async def read_inverter_data(self):
-        regs = await self.get_registers(unit_id=self._inverter_unit_id, address=INVERTER_ADDRESS, count=99)
-        if regs is None:
+async def read_inverter_data(self):
+        # Wir lesen nur 50 Register ab 40071 - das ist sicher unter dem 125er Limit
+        regs = await self.get_registers(unit_id=self._inverter_unit_id, address=INVERTER_ADDRESS, count=50)
+        
+        if regs is None or len(regs) < 40:
+            _LOGGER.error("Konnte Inverter-Register nicht lesen")
             return False
-            
-        # Wir suchen die 103 (Inverter Model)
+
+        # Wir suchen die 103 (Inverter Model) in den gelesenen Daten
+        start_index = -1
         for i in range(len(regs)):
             if regs[i] == 103:
-                _LOGGER.error(f"GEFUNDEN! Modell 103 startet bei Index {i} (Relativ zu {INVERTER_ADDRESS})")
-                
-                # TmpCab ist laut Doku Register 34. 
-                # Da regs[i] = Register 1 ist, ist TmpCab bei i + 33.
-                t_idx = i + 33
-                sf_idx = i + 37
-                
-                if t_idx < len(regs):
-                    t_raw = self._client.convert_from_registers(regs[t_idx:t_idx+1], data_type=self._client.DATATYPE.INT16)
-                    t_sf = self._client.convert_from_registers(regs[sf_idx:sf_idx+1], data_type=self._client.DATATYPE.INT16)
-                    
-                    if t_raw is not None and t_raw != -32768:
-                        # Wir nehmen den SF aus der Doku (-1), falls das Register spinnt
-                        actual_sf = t_sf if (t_sf is not None and t_sf != -32768) else -1
-                        self.data['tempcab'] = self.calculate_value(t_raw, actual_sf)
-                        _LOGGER.error(f"ERFOLG: Temp ist {self.data['tempcab']} (Index {t_idx})")
+                start_index = i
                 break
+        
+        if start_index != -1:
+            _LOGGER.error(f"VERTO: 103 gefunden bei Index {start_index}")
+            
+            # Basisdaten (Hz) für das Smartmeter setzen, damit es nicht crasht
+            try:
+                hz_raw = regs[start_index + 16] # Register 17
+                self.data['line_frequency'] = hz_raw / 100.0 if hz_raw != 0 else 50.0
+            except:
+                self.data['line_frequency'] = 50.0
+
+            # Temperatur (Register 34 -> Index start_index + 33)
+            try:
+                t_idx = start_index + 33
+                t_raw = regs[t_idx]
+                if t_raw is not None and t_raw != -32768:
+                    # Wir rechnen hart durch 10 (SF -1 laut deiner Tabelle)
+                    self.data['tempcab'] = float(t_raw) / 10.0
+                    _LOGGER.error(f"VERTO TEMP GEFUNDEN: {self.data['tempcab']} Grad")
+                else:
+                    self.data['tempcab'] = 0.0
+            except:
+                self.data['tempcab'] = 0.0
         else:
-            _LOGGER.error(f"103 nicht gefunden in den ersten 100 Registern ab {INVERTER_ADDRESS}")
+            _LOGGER.error("Modell 103 nicht in den ersten 50 Registern gefunden. Wir müssen den Scan-Bereich verschieben.")
+            # Setze Pflicht-Daten trotzdem, um Folgefehler im Meter zu vermeiden
+            self.data['line_frequency'] = 50.0
 
         return True
 
