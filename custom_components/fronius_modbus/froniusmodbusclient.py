@@ -186,19 +186,19 @@ class FroniusModbusClient(ExtModbusClient):
 
         # --- TEMPERATUR FIX ---
         try:
-            # Wir lesen den Rohwert aus Register 31 (der vorhin '41' geliefert hat)
-            TmpCab = self._client.convert_from_registers(regs[5:6], data_type = self._client.DATATYPE.INT16)
-            Tmp_SF = self._client.convert_from_registers(regs[4:5], data_type = self._client.DATATYPE.INT16)
-            
-            temp_raw_calculated = self.calculate_value(TmpCab, Tmp_SF)
+            # Cabinet Temperature (Register 34)
+            TmpCab_raw = self._client.convert_from_registers(regs[34:35], data_type = self._client.DATATYPE.INT16)
+            # Scale Factor für alle Temperaturen (Register 38)
+            Tmp_SF = self._client.convert_from_registers(regs[38:39], data_type = self._client.DATATYPE.INT16)
 
-            if temp_raw_calculated is not None:
-                self.data['tempcab'] = temp_raw_calculated * 100
+            if TmpCab_raw is not None and Tmp_SF is not None:
+                # Wir nutzen die Standard-Berechnung: TmpCab * 10^Tmp_SF
+                self.data['tempcab'] = self.calculate_value(TmpCab_raw, Tmp_SF)
             else:
                 self.data['tempcab'] = 0.0
                 
         except Exception as e:
-            _LOGGER.error(f"Fehler bei Temperatur-Direktlesung: {e}")
+            _LOGGER.error(f"Fehler beim Lesen der Inverter-Temperatur: {e}")
             self.data['tempcab'] = 0.0
         
         #St = self._client.convert_from_registers(regs[36:37], data_type = self._client.DATATYPE.UINT16)
