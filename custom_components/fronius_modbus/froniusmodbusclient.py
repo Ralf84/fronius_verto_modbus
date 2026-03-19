@@ -164,20 +164,34 @@ class FroniusModbusClient(ExtModbusClient):
         return True
 
     async def read_inverter_data(self):
-        regs = await self.get_registers(unit_id=self._inverter_unit_id, address=INVERTER_ADDRESS, count=150)
+        regs = await self.get_registers(unit_id=self._inverter_unit_id, address=INVERTER_ADDRESS, count=100)
         if regs is None:
             return False
             
+        # Wir suchen die 103 (Inverter Model)
         for i in range(len(regs)):
             if regs[i] == 103:
-                # Das ist der Moment der Wahrheit!
-                echte_adresse = 40001 + i
-                _LOGGER.error(f"GEFUNDEN! Modell 103 startet bei Adresse: {echte_adresse} (Index {i})")
+                _LOGGER.error(f"GEFUNDEN! Modell 103 startet bei Index {i} (Relativ zu {INVERTER_ADDRESS})")
                 
-                # Wenn wir die 103 gefunden haben, ist TmpCab 33 Register weiter
-                t_raw = regs[i + 33]
-                _LOGGER.error(f"TmpCab Rohwert an dieser Stelle: {t_raw}")
+                # TmpCab ist laut Doku Register 34. 
+                # Da regs[i] = Register 1 ist, ist TmpCab bei i + 33.
+                t_idx = i + 33
+                sf_idx = i + 37
+                
+                if t_idx < len(regs):
+                    t_raw = self._client.convert_from_registers(regs[t_idx:t_idx+1], data_type=self._client.DATATYPE.INT16)
+                    t_sf = self._client.convert_from_registers(regs[sf_idx:sf_idx+1], data_type=self._client.DATATYPE.INT16)
+                    
+                    if t_raw is not None and t_raw != -32768:
+                        # Wir nehmen den SF aus der Doku (-1), falls das Register spinnt
+                        actual_sf = t_sf if (t_sf is not None and t_sf != -32768) else -1
+                        self.data['tempcab'] = self.calculate_value(t_raw, actual_sf)
+                        _LOGGER.error(f"ERFOLG: Temp ist {self.data['tempcab']} (Index {t_idx})")
                 break
+        else:
+            _LOGGER.error(f"103 nicht gefunden in den ersten 100 Registern ab {INVERTER_ADDRESS}")
+
+        return True
 
         
         PPVphAB = self._client.convert_from_registers(regs[5:6], data_type = self._client.DATATYPE.UINT16)
