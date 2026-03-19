@@ -111,17 +111,28 @@ class ExtModbusClient:
         return data
 
     async def get_registers(self, unit_id, address, count, retries = 0):
-        data = await self.read_holding_registers(unit_id=unit_id, address=address, count=count)
-        if data.isError():
-            if isinstance(data,ModbusIOException):
-                if retries < 1:
-                    _LOGGER.debug(f"IO Error: {data}. Retrying...")
-                    return await self.get_registers(address=address, count=count, retries = retries + 1)
-                else:
-                    _LOGGER.error(f"error reading register: {address} count: {count} unit id: {unit_id} error: {data} ")
-            else:
-                _LOGGER.error(f"error reading register: {address} count: {count} unit id: {unit_id} error: {data} ")
+        try:
+            data = await self.read_holding_registers(unit_id=unit_id, address=address, count=count)
+        except Exception as e:
+            _LOGGER.error(f"Kritischer Modbus-Fehler bei Adresse {address}: {e}")
             return None
+
+        # Prüfen, ob data überhaupt ein Objekt ist (verhindert NoneType Error)
+        if data is None:
+            _LOGGER.error(f"Modbus Timeout oder keine Antwort bei Adresse {address}")
+            return None
+
+        if data.isError():
+            # ModbusIOException muss importiert sein (meistens von pymodbus.exceptions)
+            if retries < 1:
+                _LOGGER.debug(f"Modbus Fehler: {data}. Versuche es erneut (Retry {retries + 1})...")
+                # WICHTIG: unit_id beim Retry wieder mitgeben!
+                return await self.get_registers(unit_id=unit_id, address=address, count=count, retries = retries + 1)
+            else:
+                _LOGGER.error(f"Fehler beim Lesen von Register: {address}, Count: {count}, Unit ID: {unit_id}, Fehler: {data}")
+                return None
+
+        # Wenn alles ok ist, die Register zurückgeben
         return data.registers
 
     async def write_registers(self, unit_id, address, payload):
