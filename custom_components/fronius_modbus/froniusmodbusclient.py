@@ -184,22 +184,6 @@ class FroniusModbusClient(ExtModbusClient):
 
         WH = self._client.convert_from_registers(regs[22:24], data_type = self._client.DATATYPE.UINT32)
         WH_SF = self._client.convert_from_registers(regs[24:25], data_type = self._client.DATATYPE.INT16)
-
-        # --- TEMPERATUR FIX ---
-        try:
-            # Cabinet Temperature (Register 34)
-            v1 = self._client.convert_from_registers(regs[0:1], data_type = self._client.DATATYPE.UINT16)
-            v2 = self._client.convert_from_registers(regs[1:2], data_type = self._client.DATATYPE.UINT16)
-            v3 = self._client.convert_from_registers(regs[2:3], data_type = self._client.DATATYPE.UINT16)
-            v4 = self._client.convert_from_registers(regs[3:4], data_type = self._client.DATATYPE.UINT16)
-            v5 = self._client.convert_from_registers(regs[4:5], data_type = self._client.DATATYPE.UINT16)
-            v6 = self._client.convert_from_registers(regs[5:6], data_type = self._client.DATATYPE.UINT16)
-            v7 = self._client.convert_from_registers(regs[6:7], data_type = self._client.DATATYPE.UINT16)
-
-            _LOGGER.error(f"VERTO DEEP SCAN: V1={v1}, V2={v2}, V3={v3}, V4={v4}, V5={v5}, V6={v6}, V7={v7}")
-
-        except Exception as e:
-            _LOGGER.error(f"Scan fehlgeschlagen: {e}")
         
         #St = self._client.convert_from_registers(regs[36:37], data_type = self._client.DATATYPE.UINT16)
         StVnd = self._client.convert_from_registers(regs[37:38], data_type = self._client.DATATYPE.UINT16)
